@@ -154,17 +154,10 @@ conversation.append(Qwen(debate_question))
 conversation.append(Llama(debate_question))
 conversation.append(Deepseek(debate_question))
 
-# conversation = {}
-
-# for val1,val2 in zip(names,models):
-#     conversation[val1] = val2(debate_question)
-
 conversation
 
 # Judges
 Judging_quota = "You are the judges in a debate on,"+debate_question+"you are to give the grade the responses of every model out of 10 alone by stating their name given at the start of each converation in the list and grade them :\n"
-# for val1,val2 in zip(names,models):
-#     print("\n\nJudge "+val1+" : \n",val2(Judging_quota,conversation))
 
 print("\n\nJudge GEMINI : \n",Gemini(Judging_quota,conversation))
 print("\n\nJudge MISTRAL : \n",Mistral(Judging_quota,conversation))
