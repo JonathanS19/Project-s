@@ -7,7 +7,7 @@ from google import genai
 #Llama Api
 def Llama(input1,input2=None):
     client = Groq(
-        api_key = "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",
+        api_key = "api_key",
     )
     
     if input2:
@@ -40,7 +40,7 @@ def Llama(input1,input2=None):
 #Qwen Api
 def Qwen(input1,input2=None):
     client = Groq(
-        api_key = "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",
+        api_key = "api_key",
     )
 
     if input2:
@@ -71,7 +71,7 @@ def Qwen(input1,input2=None):
 #Mistral Api
 def Mistral(input1,input2=None):
     client = Groq(
-        api_key = "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",
+        api_key = "api_key",
     )
 
     if input2:
@@ -102,7 +102,7 @@ def Mistral(input1,input2=None):
 #Deepseek
 def Deepseek(input1,input2=None):
     client = Groq(
-        api_key = "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",
+        api_key = "api_key",
     )
 
     if input2:
@@ -132,7 +132,7 @@ def Deepseek(input1,input2=None):
 
 #Gemini Api
 def Gemini(input1,input2=None):
-    client = genai.Client(api_key="AIzaSyCRyNkjJeC0MQjsHt3JJgEZgyKB7bDtfBk")
+    client = genai.Client(api_key="api_key")
 
     if input2 :
         contents = input1, input2
