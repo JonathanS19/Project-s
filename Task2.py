@@ -13,8 +13,6 @@ from sklearn.metrics import mean_squared_error, r2_score
 # Reading dataset
 with open('/content/Dataset .csv',encoding='utf-8',errors='replace') as f:
   data = pd.read_csv(f)
-
-# data = pd.read_csv('/content/Dataset .csv',encoding='utf-8',errors='replace')
 data_cpy = data.copy()
 
 # Remove the null values
