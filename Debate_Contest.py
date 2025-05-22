@@ -1,166 +1,218 @@
-# importing all the necessary files
-import os
-import requests
-from groq import Groq
+# Imports
+from huggingface_hub import InferenceClient
 from google import genai
+import random
 
-#Llama Api
-def Llama(input1,input2=None):
-    client = Groq(
-        api_key = "api_key",
-    )
+# Function to Randomly start the conversation
+def convo_order(num_range):
+    order = random.sample(num_range,k = len(num_range))
+    return order
+
+# Deepseek module
+
+def Deepseek(user_input,flag):
+
+    if flag == 0:
+
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="deepseek-ai/DeepSeek-V3-0324",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+    else:
+            
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="deepseek-ai/DeepSeek-V3-0324",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+
+    print("Deepseek : "+completion.choices[0].message.content)
+
+# Qwen module
+
+def Qwen(user_input,flag) : 
+
+    if flag == 0 :
+
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="Qwen/Qwen3-235B-A22B",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+    else :
+        
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="Qwen/Qwen3-235B-A22B",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
     
-    if input2:
-        contents = f"{input1}{input2}"
-        chat_completion = client.chat.completions.create(
-        messages = [
-                    {
-                        "role": "user",
-                     "content": contents
-                    }
-                ],
-        model="llama-3.3-70b-versatile",
-        stream=False,
+    print("Qwen : "+completion.choices[0].message.content)
+
+# Mistral module
+
+def Mistral(user_input,flag):
+
+    if flag == 0 :
+
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
         )
+
+        completion = client.chat.completions.create(
+            model="mistralai/Mistral-7B-Instruct-v0.3",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+
+    else :
+        
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="mistralai/Mistral-7B-Instruct-v0.3",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+
+    print("Mistral : "+completion.choices[0].message.content)
+
+# LLama module
+
+def LLama(user_input,flag):
+
+    if flag == 0 : 
+
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-8B-Instruct",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+    
+    else :
+        
+        client = InferenceClient(
+            provider="novita",
+            api_key="Api_key",
+        )
+
+        completion = client.chat.completions.create(
+            model="meta-llama/Meta-Llama-3.1-8B-Instruct",
+            messages=[
+                {
+                    "role": "user",
+                    "content": user_input
+                }
+            ],
+        )
+
+
+
+    print("LLAMA : "+completion.choices[0].message.content)
+    
+# Gemini module
+
+def Gemini(user_input,flag):
+
+    if flag == 0:
+        client = genai.Client(api_key="Api_key")
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash", contents = user_input
+        )
+
     else:
-        contents = input1
-        chat_completion = client.chat.completions.create(
-        messages = [
-                    {
-                        "role": "user",
-                     "content": "\nLLAMA : \n\n" + contents
-                    }
-                ],
-        model="llama-3.3-70b-versatile",
-        stream=False,
+        client = genai.Client(api_key="Api_key")
+
+        response = client.models.generate_content(
+            model="gemini-2.0-flash", contents = user_input
         )
 
-    return chat_completion.choices[0].message.content
-  
-#Qwen Api
-def Qwen(input1,input2=None):
-    client = Groq(
-        api_key = "api_key",
-    )
+    return "Gemini : "+response.text
 
-    if input2:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content" : f"{input1}{input2}",
-                }
-            ],
-            model="qwen-2.5-coder-32b",
-            stream=False,
-        )
-    else:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content" : "\nQWEN : \n\n"+input1,
-                }
-            ],
-            model="qwen-2.5-coder-32b",
-            stream=False,
-        )
+# Debate module
 
-    return chat_completion.choices[0].message.content
+models = {
+"1":Deepseek,
+"2":Qwen,
+"3":Mistral,
+"4":LLama,
+"5":Gemini}
 
-#Mistral Api
-def Mistral(input1,input2=None):
-    client = Groq(
-        api_key = "api_key",
-    )
+num_range = len(models)
 
-    if input2:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content" : f"{input1}{input2}",
-                }
-            ],
-            model="mistral-saba-24b",
-            stream=False,
-        )
-    else:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content" : "\nMISTRAL : \n\n"+input1,
-                }
-            ],
-            model="mistral-saba-24b",
-            stream=False,
-        )
+question = "AI a boon or bane?"
+convo =  ""
 
-    return chat_completion.choices[0].message.content
+debate_input = f"You are participating in a debate ensure professional behaviour. The topic is: '{question}'. Based on the arguments presented so far (if none are given assume you are the starter): {convo}, take a clear stance on the issue and provide your honest opinion, supported by reasoning,"
 
-#Deepseek
-def Deepseek(input1,input2=None):
-    client = Groq(
-        api_key = "api_key",
-    )
+judgement_input = f""
 
-    if input2:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content" : f"{input1}{input2}",
-                }
-            ],
-            model="deepseek-r1-distill-llama-70b",
-            stream=False,
-        )
-    else:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content" : "\nDEEPSEEK : \n\n"+input1,
-                }
-            ],
-            model="deepseek-r1-distill-llama-70b",
-            stream=False,
-        )
-
-    return chat_completion.choices[0].message.content   
-
-#Gemini Api
-def Gemini(input1,input2=None):
-    client = genai.Client(api_key="api_key")
-
-    if input2 :
-        contents = input1, input2
-    else:
-        contents = "\nGEMINI : \n\n"+input1   
-    response = client.models.generate_content(model="gemini-2.0-flash",contents=contents).text
-    return response
-
-# Contestants
-debate_question = "Is God real and what do you conclude?"
-# names = ["Gemini","Mistral","Qwen","Llama","Deepseek"]
-# models = [Gemini,Mistral,Qwen,Llama,Deepseek]
-
-conversation = []
-
-conversation.append(Gemini(debate_question))
-conversation.append(Mistral(debate_question))
-conversation.append(Qwen(debate_question))
-conversation.append(Llama(debate_question))
-conversation.append(Deepseek(debate_question))
-
-conversation
-
-# Judges
-Judging_quota = "You are the judges in a debate on,"+debate_question+"you are to give the grade the responses of every model out of 10 alone by stating their name given at the start of each converation in the list and grade them :\n"
-
-print("\n\nJudge GEMINI : \n",Gemini(Judging_quota,conversation))
-print("\n\nJudge MISTRAL : \n",Mistral(Judging_quota,conversation))
-print("\n\nJudge QWEN : \n",Qwen(Judging_quota,conversation))
-print("\n\nJudge LLAMA : \n",Llama(Judging_quota,conversation))
-print("\n\nJudge DEEPSEEK : \n",Deepseek(Judging_quota,conversation))
+num_range = range(1,len(models)+1)
+order = convo_order(num_range)
+for i,val in enumerate(order):
+    try:
+        results = (models[str(i+1)](debate_input,0))
+        print(results)
+    except:
+        results = (models[str(i+1)](debate_input,0))
+        print(results)
+# result = models["1"](debate_input,0)
