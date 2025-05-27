@@ -239,94 +239,106 @@ else:
 
 #         print(f"{company} not updated, Current date : {current_date} and Last updated : {last_date}")
 
-# Gathering the data for Testing
-file_name = "LT_Data_copy.csv"
-folder_name = "Stock's Data"
-file_path = os.path.join(folder_name,file_name)
-
-df = pd.read_csv(file_path)
-first_row = df.iloc[0]
-
-print(first_row.tolist())
-
-driver = webdriver.Chrome()
-company = "LT"
-url = f"https://finance.yahoo.com/quote/{company}.NS/history/"
-
-driver.get(url)
-html = driver.page_source
-driver.quit()
-
-
-soup = BeautifulSoup(html,'lxml')
-
-# Copy for Testing
-
-file_name = "LT_Data_copy.csv"
-folder_name = "Stock's Data"
-file_path = os.path.join(folder_name,file_name)
-
-with open("Stock's Data\LT_Data.csv",'r',encoding='utf-8') as file:
-    page = file.read()
-
-with open(file_path,'w',encoding='utf-8') as file:
-    file.write(page)
-    print("Done!")
-
 # Updation Module
+driver = webdriver.Chrome()
 Headers = ["Dates","Open","High","Low","Close","Adj Close","Volume"]
 
-file_name = "LT_Data_copy.csv"
-folder_name = "Stock's Data"
-file_path = os.path.join(folder_name,file_name)
+for company in company_codes:
 
-last_date = first_row[0]
-print(f"last updated : ",last_date)
-tot_lst = []
-datas = soup.find('tbody').find_all('tr')
-for data in datas:
-    if last_date in data.text:
-        break
-    elements = data.find_all('td')
-    csv_lst = []
-    for element in elements:
-        csv_lst.append(element.text)
-    tot_lst.append(csv_lst)
+# Get the updated data
+    file_name = f"{company}_Data.csv"
+    folder_name = "Stock's Data"
+    file_path = os.path.join(folder_name,file_name)
 
-# A new file just to update the values and then give to original file
-temp_file_name = "temp_storage_file.csv"
-temp_file_folder_name = "NSE DATA"
-temp_file_path = os.path.join(temp_file_folder_name,temp_file_name)
+    df = pd.read_csv(file_path)
+    first_row = df.iloc[0]
+    
+    cnt = 0
+    while cnt<3:
+        try:
+            url = f"https://finance.yahoo.com/quote/{company}.NS/history/"
+            driver.get(url)
+            html = driver.page_source
+            break
+        except Exception as e:
+            if cnt<2:
+                driver.refresh()
+            elif cnt==2 :
+                driver.quit()
+                driver = webdriver.Chrome()
+                driver.get(url)
+                html = driver.page_source
+            else:
+                print(f"{company} Historical Data Error !!")
+        cnt+=1
 
-# Creates new file if it doesnt exist and clears it if it does but has data in it
-with open(temp_file_path, 'w') as file:
-    pass
 
-#Adding the New Values 
-with open(temp_file_path,'w',encoding='utf-8') as file:
-    writer = csv.writer(file)   
-    writer.writerow(Headers) # Add the headers first 
-    writer.writerows(tot_lst )# Add the new rows
-print("New values added !!")
+    soup = BeautifulSoup(html,'lxml')
 
-#Adding the Old Values
-with open(file_path,'r',encoding='utf-8') as file:
-    read = csv.reader(file)
-    read = list(read) # Currently figuring how to remove empty lists so that only data is left before adding to the temp file
+# Storing the updated data
+    file_path = os.path.join(folder_name,file_name)
 
-tot_lst = []
-for i,val in enumerate(read):
-    if val and i!=0:
-        tot_lst.append(val)
+    last_date = first_row[0]
+    print(f"{company} data was last updated : ",last_date)
 
-with open(temp_file_path,'a',encoding='utf-8') as file:
-    writer = csv.writer(file)   
-    writer.writerows(tot_lst)
-print("Old values added !!")
+    # Gathering the new data 
+    tot_lst = []
+    datas = soup.find('tbody').find_all('tr')
+    for data in datas:
+        if last_date in data.text:
+            break
+        elements = data.find_all('td')
+        csv_lst = []
+        for element in elements:
+            csv_lst.append(element.text)
+        tot_lst.append(csv_lst)
+    
+    if not tot_lst:
+        print(f"{company} Data Up to Date !!")
+        continue
 
-# Storing the combined values in the original file
-if os.path.exists(temp_file_path) and os.path.getsize(file_path) > 0 :
-    os.replace(temp_file_path,file_path)
-    print("File replacement completed !!")
-else:
-    print("Error in file replacement !!")
+    # A new file just to update the values and then give to original file
+    temp_file_name = "temp_storage_file.csv"
+    temp_file_folder_name = "NSE DATA"
+    temp_file_path = os.path.join(temp_file_folder_name,temp_file_name)
+
+    # Creates new file if it doesnt exist and clears it if it does but has data in it
+    with open(temp_file_path, 'w') as file:
+        pass
+
+    #Adding the New Values 
+    with open(temp_file_path,'w',encoding='utf-8') as file:
+        writer = csv.writer(file)   
+        writer.writerow(Headers) # Add the headers first 
+        writer.writerows(tot_lst )# Add the new rows
+    print("New values added !!")
+
+    #Adding the Old Values
+    with open(file_path,'r',encoding='utf-8') as file:
+        read = csv.reader(file)
+        read = list(read) # Currently figuring how to remove empty lists so that only data is left before adding to the temp file
+
+    tot_lst = []
+    for i,val in enumerate(read):
+        if i==0:
+            continue
+        if val and all(field.strip() for field in val):
+            tot_lst.append(val)
+        # else:
+        #     print(f"Data {val} is missing values")
+
+    with open(temp_file_path,'a',encoding='utf-8') as file:
+        writer = csv.writer(file)   
+        writer.writerows(tot_lst)
+    print("Old values added !!")
+
+    # Storing the combined values in the original file
+    if os.path.exists(temp_file_path) and os.path.getsize(temp_file_path) > 0 :
+        os.replace(temp_file_path,file_path)
+        print(f"{company}File replacement completed !!")
+    else:
+        print("Error in file replacement !!")
+
+driver.quit()
+
+#check if the file is up to date and if not then only move foward
