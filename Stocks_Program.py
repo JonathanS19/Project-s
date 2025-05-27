@@ -194,49 +194,139 @@ else:
     print("Something is missing !!")
 
 # Data to feed the model
-folder_name = "Stock's Data"
-file_name = "CIPLA_Data.csv"
-file_path = os.path.join(folder_name,file_name)
+# folder_name = "Stock's Data"
+# file_name = "CIPLA_Data.csv"
+# file_path = os.path.join(folder_name,file_name)
 
-with open(file_path,'r',encoding='utf-8') as file:
-    data = file.read()
+# with open(file_path,'r',encoding='utf-8') as file:
+#     data = file.read()
 
 #data
 
 # Using LLM's to Derive Insights 
 
-from google import genai
+# from google import genai
 
-client = genai.Client(api_key="AIzaSyCRyNkjJeC0MQjsHt3JJgEZgyKB7bDtfBk")
+# client = genai.Client(api_key="AIzaSyCRyNkjJeC0MQjsHt3JJgEZgyKB7bDtfBk")
 
-response = client.models.generate_content(
-    model="gemini-2.0-flash", contents=f"As a professional stock trader give me your opinion on the data, {data}"
-)
-print(response.text)
+# response = client.models.generate_content(
+#     model="gemini-2.0-flash", contents=f"As a professional stock trader give me your opinion on the data, {data}"
+# )
+# print(response.text)
 
 # Make the List downloader and name gatherer into a function get it to replenish the new values and check what is missing 
-from datetime import date
-from datetime import datetime
+# from datetime import date
+# from datetime import datetime
 
-current_date = (date.today()).strftime("%m-%d")
-folder_name = "NSE DATA"
+# current_date = (date.today()).strftime("%m-%d")
+# folder_name = "NSE DATA"
 
-for company in company_codes:
-    file_name = f"{company}_Data.html"
-    file_path = os.path.join(folder_name,file_name)
+# for company in company_codes:
+#     file_name = f"{company}_Data.html"
+#     file_path = os.path.join(folder_name,file_name)
 
-    with open(file_path,'r',encoding='utf-8') as file:
-        page = file.read()
+#     with open(file_path,'r',encoding='utf-8') as file:
+#         page = file.read()
 
-    soup = BeautifulSoup(page,'lxml')
-    datas = soup.find('tbody').find_all('tr')
-    last_date = re.findall(r'([A-Za-z]+ \d+)',datas[0].find(class_='yf-1jecxey').text)
-    last_date = datetime.strptime(last_date[0],"%B %d").strftime("%m-%d")
+#     soup = BeautifulSoup(page,'lxml')
+#     datas = soup.find('tbody').find_all('tr')
+#     last_date = re.findall(r'([A-Za-z]+ \d+)',datas[0].find(class_='yf-1jecxey').text)
+#     last_date = datetime.strptime(last_date[0],"%B %d").strftime("%m-%d")
 
-    if last_date == current_date:
-        print(f"{company} updated")
-    else:
+#     if last_date == current_date:
+#         print(f"{company} updated")
+#     else:
 
-        print(f"{company} not updated, Current date : {current_date} and Last updated : {last_date}")
+#         print(f"{company} not updated, Current date : {current_date} and Last updated : {last_date}")
 
-    
+# Gathering the data for Testing
+file_name = "LT_Data_copy.csv"
+folder_name = "Stock's Data"
+file_path = os.path.join(folder_name,file_name)
+
+df = pd.read_csv(file_path)
+first_row = df.iloc[0]
+
+print(first_row.tolist())
+
+driver = webdriver.Chrome()
+company = "LT"
+url = f"https://finance.yahoo.com/quote/{company}.NS/history/"
+
+driver.get(url)
+html = driver.page_source
+driver.quit()
+
+
+soup = BeautifulSoup(html,'lxml')
+
+# Copy for Testing
+
+file_name = "LT_Data_copy.csv"
+folder_name = "Stock's Data"
+file_path = os.path.join(folder_name,file_name)
+
+with open("Stock's Data\LT_Data.csv",'r',encoding='utf-8') as file:
+    page = file.read()
+
+with open(file_path,'w',encoding='utf-8') as file:
+    file.write(page)
+    print("Done!")
+
+# Updation Module
+Headers = ["Dates","Open","High","Low","Close","Adj Close","Volume"]
+
+file_name = "LT_Data_copy.csv"
+folder_name = "Stock's Data"
+file_path = os.path.join(folder_name,file_name)
+
+last_date = first_row[0]
+print(f"last updated : ",last_date)
+tot_lst = []
+datas = soup.find('tbody').find_all('tr')
+for data in datas:
+    if last_date in data.text:
+        break
+    elements = data.find_all('td')
+    csv_lst = []
+    for element in elements:
+        csv_lst.append(element.text)
+    tot_lst.append(csv_lst)
+
+# A new file just to update the values and then give to original file
+temp_file_name = "temp_storage_file.csv"
+temp_file_folder_name = "NSE DATA"
+temp_file_path = os.path.join(temp_file_folder_name,temp_file_name)
+
+# Creates new file if it doesnt exist and clears it if it does but has data in it
+with open(temp_file_path, 'w') as file:
+    pass
+
+#Adding the New Values 
+with open(temp_file_path,'w',encoding='utf-8') as file:
+    writer = csv.writer(file)   
+    writer.writerow(Headers) # Add the headers first 
+    writer.writerows(tot_lst )# Add the new rows
+print("New values added !!")
+
+#Adding the Old Values
+with open(file_path,'r',encoding='utf-8') as file:
+    read = csv.reader(file)
+    read = list(read) # Currently figuring how to remove empty lists so that only data is left before adding to the temp file
+
+tot_lst = []
+for i,val in enumerate(read):
+    if val and i!=0:
+        tot_lst.append(val)
+
+with open(temp_file_path,'a',encoding='utf-8') as file:
+    writer = csv.writer(file)   
+    writer.writerows(tot_lst)
+print("Old values added !!")
+
+# Storing the combined values in the original file
+if os.path.exists(temp_file_path) and os.path.getsize(file_path) > 0 :
+    os.replace(temp_file_path,file_path)
+    print("File replacement completed !!")
+else:
+    print("Error in file replacement !!")
